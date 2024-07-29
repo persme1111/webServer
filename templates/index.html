@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurant Recommendation</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Restaurant Recommendation</h1>
+    <p>The application is designed to recommend restaurants to users once users choose a preferred dish of interest.</p>
+    <h1>Upload a File</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+    </form>
+    <div id="output"></div>
+
+    <h1>Select a dish option</h1>
+    <select id="dropdown" onchange="updateContent()">
+        <option value="pepperoni">pepperoni</option>
+        <option value="prime rib">prime rib</option>
+        <option value="cheese">cheese</option>
+    </select>
+
+    <h1></h1>
+    <h1>Bar Plot: Restaurant Ranking </h1>
+    <div id="plot-container" style="height: 400px; width: 100%;">
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        {{plot_html|safe }}
+    </div>
+    <div id="plot" style="height: 400px; width: 100%;">
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    </div>
+    <h1></h1>
+    <h1>Restaurant Map</h1>
+    <div id="map-container" style="height: 400px; width: 100%;">
+        {{ map_html|safe }}
+    </div>
+    <div id="map" style="height: 400px; width: 100%;">
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            document.getElementById('output').innerText = data.content;
+        });
+
+        function updateContent() {
+            const dropdown = document.getElementById('dropdown');
+            const selectedValue = dropdown.value;
+            fetch('/get_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selected_value: selectedValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('map-container').innerHTML = data.map_html;
+            });
+        }
+
+        // Initialize map and plot
+        updateContent();
+    </script>
+</body>
+</html>
